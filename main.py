@@ -58,6 +58,10 @@ def run(opt):
     out = cv2.VideoWriter(vid_path, codec, vid_fps, (vid_width, vid_height))
 
     start_time = time.time()
+	
+    labelStoreVec = []
+    dissapearedStoreVec = []
+
     # 5. Iterate dataset
     for frame_idx, (path, img, im0s, vid_cap) in enumerate(dataset):
         img = torch.from_numpy(img).to(device)
@@ -77,17 +81,25 @@ def run(opt):
                                 agnostic=False
                             )
         t2 = time_synchronized()
-
+        ids = []
         # 5.3 Process detections
         for i, det in enumerate(pred):  # detections per image
             p, im0 = path, im0s
-        
+            s = ""
+
             if det is not None and len(det):
                 # Rescale boxes from img_size to im0 size
                 det[:, :4] = scale_coords(img.shape[2:], det[:, :4], im0.shape).round()
-            
+
+                # Print results
+                for c in det[:, -1].unique():
+                    n = (det[:, -1] == c).sum()  # detections per class
+                    s += '%g %ss, ' % (n, names[int(c)])  # add to string
+
                 xywh_bboxs = []
                 confs = []
+
+                print("det:", det[:,:4])
             
                 # Adapt detections to deep sort input format
                 for *xyxy, conf, cls in det:
@@ -107,6 +119,31 @@ def run(opt):
                 if len(outputs) > 0:
                     bbox_xyxy = outputs[:, :4]
                     identities = outputs[:, -1]
+
+                    idx = 0
+
+                    for ID_stored in labelStoreVec:
+                        if ID_stored not in identities:
+                            if ID_stored not in dissapearedStoreVec:
+                                dissapearedStoreVec.append(ID_stored)
+
+
+                    for ID in identities:
+
+                        if ID not in labelStoreVec:
+                            if frame_idx>10:
+                                if bbox_xyxy[idx][1]/im0.shape[0]>0.5:
+                                    labelStoreVec.append(ID)
+                            else:
+                                labelStoreVec.append(ID)
+                        else:
+                            for k in range(len(dissapearedStoreVec)):
+                                if ID == dissapearedStoreVec[k]:
+                                    identities[idx] = ID*100
+
+                        idx+=1
+
+
                     draw_boxes(im0, bbox_xyxy, identities)
 
                     # Write MOT compliant results to file
@@ -118,17 +155,16 @@ def run(opt):
                             bbox_w = tlwh_bbox[2]
                             bbox_h = tlwh_bbox[3]
                             identity = output[-1]
+							#ids.append(identity)
                             with open(txt_path, 'a') as f:
                                 f.write(('%g ' * 10 + '\n') % (frame_idx, identity, bbox_top,
                                                             bbox_left, bbox_w, bbox_h, -1, -1, -1, -1))  # label format
-                else:
-                    identities = [0]
                 
             else:
                 deepsort.increment_ages()
 
         cv2.putText(im0, "DHEERAJ MADDA", (850,90), 4, 1.5, (0,0,255), 2)
-        cv2.putText(im0, "{}".format(max(identities)), (1750,90), 4, 1.5, (0,0,255), 2)
+        cv2.putText(im0, "{}".format(len(labelStoreVec)), (1750,90), 4, 1.5, (0,0,255), 2)
         out.write(im0)
 
     out.release()
