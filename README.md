@@ -1,6 +1,6 @@
 # CVZone-Contest-Drone-Surveillance-Counter
 
-Here I implemented a car counter according to this competition: https://www.computervision.zone/dsc/. I used the Yolo5+deepsort repo (https://github.com/mikel-brostrom/Yolov5_DeepSort_Pytorch), trained on the given video as a dataset, and modified the code a bit for the purpose of the contest (track.py from line 210-233).
+Here I implemented a car counter according to this competition: https://www.computervision.zone/dsc/. I used the Yolo5+deepsort repo (https://github.com/mikel-brostrom/Yolov5_DeepSort_Pytorch), modified the code a bit for the purpose of the contest (track.py from line 210-233).
 
 The modifications are the following:
 
