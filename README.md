@@ -1,4 +1,6 @@
 # CVZone-Contest-Drone-Surveillance-Counter
+![ezgif com-gif-maker](https://user-images.githubusercontent.com/50489165/152181592-56a15c51-620b-4334-9e5b-9d6edd1bb5b1.gif)
+
 
 Here I implemented a car counter according to this competition: https://www.computervision.zone/dsc/. I used the Yolo5+deepsort repo (https://github.com/mikel-brostrom/Yolov5_DeepSort_Pytorch), modified the code a bit for the purpose of the contest (track.py from line 210-233).
 
